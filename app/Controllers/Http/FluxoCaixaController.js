@@ -1,93 +1,50 @@
-'use strict'
+"use strict";
 
-/** @typedef {import('@adonisjs/framework/src/Request')} Request */
-/** @typedef {import('@adonisjs/framework/src/Response')} Response */
-/** @typedef {import('@adonisjs/framework/src/View')} View */
+const FluxoCaixa = use("App/Models/FluxoCaixa");
 
-/**
- * Resourceful controller for interacting with fluxocaixas
- */
 class FluxoCaixaController {
-  /**
-   * Show a list of all fluxocaixas.
-   * GET fluxocaixas
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async index ({ request, response, view }) {
+  async index() {
+    const data = await FluxoCaixa.query()
+      .with("movimentacao")
+      .with("usuario")
+      .fetch();
+
+    return data;
   }
 
-  /**
-   * Render a form to be used for creating a new fluxocaixa.
-   * GET fluxocaixas/create
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async create ({ request, response, view }) {
+  async store({ request }) {
+    const data = request.only(["movimentacao_id", "usuario_id"]);
+
+    const fluxocaixa = await FluxoCaixa.create(data);
+
+    return fluxocaixa;
   }
 
-  /**
-   * Create/save a new fluxocaixa.
-   * POST fluxocaixas
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
-  async store ({ request, response }) {
+  async show({ params }) {
+    const data = await FluxoCaixa.query()
+      .with("movimentacao")
+      .with("usuario")
+      .where("id", params.id)
+      .fetch();
+
+    return data;
   }
 
-  /**
-   * Display a single fluxocaixa.
-   * GET fluxocaixas/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async show ({ params, request, response, view }) {
+  async update({ params, request }) {
+    const fluxocaixa = await FluxoCaixa.findOrFail(params.id);
+    const data = request.only(["movimentacao_id", "usuario_id"]);
+
+    fluxocaixa.merge(data);
+    await fluxocaixa.save();
+
+    return fluxocaixa;
   }
 
-  /**
-   * Render a form to update an existing fluxocaixa.
-   * GET fluxocaixas/:id/edit
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async edit ({ params, request, response, view }) {
-  }
+  async destroy({ params }) {
+    const fluxocaixa = await FluxoCaixa.findOrFail(params.id);
 
-  /**
-   * Update fluxocaixa details.
-   * PUT or PATCH fluxocaixas/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
-  async update ({ params, request, response }) {
-  }
-
-  /**
-   * Delete a fluxocaixa with id.
-   * DELETE fluxocaixas/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
-  async destroy ({ params, request, response }) {
+    await fluxocaixa.delete();
   }
 }
 
-module.exports = FluxoCaixaController
+module.exports = FluxoCaixaController;

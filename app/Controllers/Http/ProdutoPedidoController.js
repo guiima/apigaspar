@@ -1,93 +1,50 @@
-'use strict'
+"use strict";
 
-/** @typedef {import('@adonisjs/framework/src/Request')} Request */
-/** @typedef {import('@adonisjs/framework/src/Response')} Response */
-/** @typedef {import('@adonisjs/framework/src/View')} View */
+const ProdutoPedido = use("App/Models/ProdutoPedido");
 
-/**
- * Resourceful controller for interacting with produtopedidos
- */
 class ProdutoPedidoController {
-  /**
-   * Show a list of all produtopedidos.
-   * GET produtopedidos
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async index ({ request, response, view }) {
+  async index() {
+    const data = await ProdutoPedido.query()
+      .with("produto")
+      .with("pedido")
+      .fetch();
+
+    return data;
   }
 
-  /**
-   * Render a form to be used for creating a new produtopedido.
-   * GET produtopedidos/create
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async create ({ request, response, view }) {
+  async store({ request }) {
+    const data = request.only(["quantidade", "produto_id", "pedido_id"]);
+
+    const produto_pedido = await ProdutoPedido.create(data);
+
+    return produto_pedido;
   }
 
-  /**
-   * Create/save a new produtopedido.
-   * POST produtopedidos
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
-  async store ({ request, response }) {
+  async show({ params }) {
+    const data = await ProdutoPedido.query()
+      .with("produto")
+      .with("pedido")
+      .where("id", params.id)
+      .fetch();
+
+    return data;
   }
 
-  /**
-   * Display a single produtopedido.
-   * GET produtopedidos/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async show ({ params, request, response, view }) {
+  async update({ params, request }) {
+    const produto_pedido = await ProdutoPedido.findOrFail(params.id);
+    const data = request.only(["quantidade", "produto_id", "pedido_id"]);
+
+    produto_pedido.merge(data);
+    await produto_pedido.save();
+
+    return produto_pedido;
   }
 
-  /**
-   * Render a form to update an existing produtopedido.
-   * GET produtopedidos/:id/edit
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async edit ({ params, request, response, view }) {
-  }
+  async destroy({ params }) {
+    const produto_pedido = await ProdutoPedido.findOrFail(params.id);
 
-  /**
-   * Update produtopedido details.
-   * PUT or PATCH produtopedidos/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
-  async update ({ params, request, response }) {
-  }
-
-  /**
-   * Delete a produtopedido with id.
-   * DELETE produtopedidos/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
-  async destroy ({ params, request, response }) {
+    await produto_pedido.delete();
   }
 }
 
-module.exports = ProdutoPedidoController
+module.exports = ProdutoPedidoController;
